@@ -1,13 +1,11 @@
 #import libraries to be used
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
-
-import certifi
-
+from flask_cors import CORS
 from bson import ObjectId
 
 from datetime import datetime
-
+import certifi
 
 
 #added for file upload
@@ -20,9 +18,11 @@ import pymupdf as fitz
 app = Flask(__name__)
 
 
+CORS(app, resources={r"/*": {"origins": "http://localhost:3000"}})
+
 #added for file upload
 #configure upload folder
-UPLOAD_FOLDER = 'uploads/'
+UPLOAD_FOLDER = 'backend/uploads/'
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
@@ -107,16 +107,21 @@ def home():
 def add_patient_with_pdf():
 
     data = request.form.to_dict()
+
+    print("Date of Birth:", data.get("date_of_birth"))
     required_fields = ["patient_id", "first_name", "last_name", "date_of_birth", "gender", "phone_number", "address", "date_of_visit", "doctor_name"]
     missing_fields = [field for field in required_fields if field not in data]
     if missing_fields:
         return jsonify({"error": f"Missing fields: {', '.join(missing_fields)}"}), 400
 
-    try:
-        datetime.strptime(data["date_of_birth"], "%Y-%m-%d")
-        datetime.strptime(data["date_of_visit"], "%Y-%m-%d")
-    except ValueError:
-        return jsonify({"error": "Incorrect date format. Use YYYY-MM-DD."}), 400
+    # try:
+    #     date_of_birth = str(data.get("date_of_birth"))
+    #     date_of_visit = str(data.get("date_of_visit"))
+    #     datetime.strptime(date_of_birth, "%Y-%m-%d")
+    #     datetime.strptime(date_of_visit, "%Y-%m-%d")
+    
+    # except ValueError:
+    #     return jsonify({"error": "Incorrect date format. Use YYYY-MM-DD."}), 400
 
     if 'file' not in request.files:
         return jsonify({"error": "No file part in the request"}), 400
