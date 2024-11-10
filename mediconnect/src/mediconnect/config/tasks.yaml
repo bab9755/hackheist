@@ -3,12 +3,13 @@ report_explanation_task:
     Given data about a patient, including name, age, diagnostic from the doctor, prescriptions, and any other relevant information, explain the report in a clear and concise manner so that it can be easily understood by the doctor for maximum efficacy.
     Here is the patient's report: {patient_report}
   expected_output: >
-    A list with 10 bullet points of the most relevant and pressing information about the patient.
+    a paragraph of maximum 3 sentences summarizing the patient report
   agent: report_explanation_agent
 
 medical_appointment_scheduler_task:
   description: >
     Given context about the schedule of the doctor and different appointment times for the doctor, provide a suggested time for the patient to schedule an appointment.
+    Keep in mind that you should only intervene when the user explicitely asks for an appointment or related topic
     Should also be able to explain the schedule in a clear and concise manner so that it can be easily understood by the patient for maximum efficiency.
     Here is the doctor's schedule: {doctor_schedule}
   expected_output: >
@@ -20,5 +21,5 @@ whatsapp_bot_task:
     Given a message from a patient, respond to the message in a clear and concise manner so that it can be easily understood by the patient for maximum efficiency.
     Here is the message from the patient: {patient_message}
   expected_output: >
-    An appropriate response to the message from the patient
+    An appropriate response to the message from the patient that is really brief and quick
   agent: whatsapp_agent

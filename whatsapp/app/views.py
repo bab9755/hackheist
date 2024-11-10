@@ -1,13 +1,24 @@
 import logging
 import json 
-
+import requests
 from flask import Blueprint, request, jsonify, current_app
 from .decorators.security import signature_required 
 
-from .utils.whatsapp_utils import( process_whatsapp_message, is_valid_whatsapp_message)
+from .utils.whatsapp_utils import( process_whatsapp_message, is_valid_whatsapp_message, )
 
 webhook_blueprint = Blueprint("webhook", __name__)
 
+
+# def get_user_message_body():
+#     body = request.get_json()
+#     wa_id = body["entry"][0]["changes"][0]["value"]["contacts"][0]["wa_id"]
+#     name = body["entry"][0]["changes"][0]["value"]["contacts"][0]["profile"]["name"]
+
+#     message = body["entry"][0]["changes"][0]["value"]["messages"][0]
+#     message_body = message["text"]["body"]
+#     return message_body
+
+    
 def handle_message():
     """
 
@@ -27,6 +38,10 @@ def handle_message():
 
 
     body = request.get_json()
+    print("what is in this ? ", body)
+
+   
+
 
     #logging info 
 

@@ -1,7 +1,7 @@
 from crewai import Agent, Crew, Process, Task
 from crewai.project import CrewBase, agent, crew, task
 from langchain.chat_models import ChatOpenAI
-from whatsapp.app.utils.whatsapp_utils import get_text_message_input, send_message
+
 
 # Uncomment the following line to use an example of a custom tool
 # from mediconnect.tools.custom_tool import MyCustomTool
@@ -13,8 +13,6 @@ from whatsapp.app.utils.whatsapp_utils import get_text_message_input, send_messa
 class MediconnectCrew():
 	"""Mediconnect crew"""
 
-	def send_response_to_user(self, recipient, response):
-		send_message(get_text_message_input(recipient, response))
 
 
 	@agent
@@ -22,20 +20,23 @@ class MediconnectCrew():
 		return Agent(
 			config=self.agents_config['report_explanation_agent'],
 			# tools=[MyCustomTool()], # Example of custom tool, loaded on the beginning of file
-			verbose=True
+			verbose=False,
+			max_iter = 1,
 		)
 
 	@agent
 	def medical_appointment_scheduler(self) -> Agent:
 		return Agent(
 			config=self.agents_config['medical_appointment_scheduler'],
-			verbose=True
+			verbose=False,
+			max_iter = 1,
 		)
 	@agent
 	def whatsapp_agent(self) -> Agent:
 		return Agent(
 			config=self.agents_config['whatsapp_agent'],
-			verbose=True
+			verbose=False,
+			max_iter = 1,
 		)
 	
 	
@@ -70,7 +71,7 @@ class MediconnectCrew():
 			tasks=self.tasks, # Automatically created by the @task decorator
 			# process=Process.sequential,
 			# manager_agent=self.manager,
-			manager_llm=ChatOpenAI(temperature=0, model="gpt-4"),
-			verbose=True,
+			manager_llm=ChatOpenAI(temperature=0, model="gpt-4o-mini"),
+			verbose=False,
 			process=Process.hierarchical, # In case you wanna use that instead https://docs.crewai.com/how-to/Hierarchical/
 		)
