@@ -7,12 +7,44 @@ from bson import ObjectId
 from datetime import datetime
 
 
+
+#added for file upload
+#added to test PDF implementation
+from werkzeug.utils import secure_filename
+import os
+import pymupdf as fitz
+
+
 app = Flask(__name__)
+
+
+#added for file upload
+#configure upload folder
+UPLOAD_FOLDER = 'uploads/'
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+
 
 #using mongodba atlas
 client = MongoClient("mongodb+srv://hackprinceton:hackprinceton123@cluster0.djq2l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0")
 #main database
 db = client.healthcare 
+
+
+
+
+def pdf_to_text(pdf_path):
+    """Convert a PDF file to text using PyMuPDF."""
+    text = ""
+    with fitz.open(pdf_path) as pdf:
+        for page_num in range(pdf.page_count):
+            page = pdf[page_num]
+            text += page.get_text()
+    return text
+
+
+
 
 @app.route('/')
 def home():
@@ -21,32 +53,87 @@ def home():
 
 #now we need to set up CRUD operations
 
-#adding a new patient to patients collection
-@app.route('/add_patient', methods=['POST'])
-def add_patient():
+# #adding a new patient to patients collection
+# @app.route('/add_patient', methods=['POST'])
+# def add_patient():
     
-    #test print statement
-    #print("add_patient route loaded")
+#     #test print statement
+#     #print("add_patient route loaded")
     
-    #conversion with json
-    data = request.json
+#     #conversion with json
+#     data = request.json
     
-    #check whether any fields are missing
+#     #check whether any fields are missing
+#     required_fields = ["patient_id", "first_name", "last_name", "date_of_birth", "gender", "phone_number", "address", "date_of_visit", "doctor_name"]
+#     missing_fields = [field for field in required_fields if field not in data]
+#     if missing_fields:
+#         return jsonify({"error": f"Missing fields: {', '.join(missing_fields)}"}), 400
+
+#     #validate date fields
+#     try:
+#         datetime.strptime(data["date_of_birth"], "%Y-%m-%d")
+#         datetime.strptime(data["date_of_visit"], "%Y-%m-%d")
+#     except ValueError:
+#         return jsonify({"error": "Incorrect date format. Use YYYY-MM-DD."}), 400
+
+    
+#     #insert data into database in the patients collection
+#     db.patients.insert_one({
+#         "patient_id": data.get("patient_id"),
+#         "first_name": data.get("first_name"),
+#         "last_name": data.get("last_name"),
+#         "date_of_birth": data.get("date_of_birth"),
+#         "gender": data.get("gender"),
+#         "phone_number": data.get("phone_number"),
+#         "address": data.get("address"),
+#         "date_of_visit": data.get("date_of_visit"),
+#         "pre_existing_conditions": data.get("pre_existing_conditions", []),
+#         "symptoms": data.get("symptoms", []),
+#         "diagnosis": data.get("diagnosis"),
+#         "medical_records": data.get("medical_records", []),
+#         "prescriptions": data.get("prescriptions", []),
+#         "doctor_name": data.get("doctor")
+#     })
+    
+#     #return message that patient has been added successfully
+#     return jsonify({"message": "Patient added successfully!"}), 201
+
+
+
+@app.route('/add_patient_with_pdf', methods=['POST'])
+def add_patient_with_pdf():
+
+    data = request.form.to_dict()
     required_fields = ["patient_id", "first_name", "last_name", "date_of_birth", "gender", "phone_number", "address", "date_of_visit", "doctor_name"]
     missing_fields = [field for field in required_fields if field not in data]
     if missing_fields:
         return jsonify({"error": f"Missing fields: {', '.join(missing_fields)}"}), 400
 
-    #validate date fields
     try:
         datetime.strptime(data["date_of_birth"], "%Y-%m-%d")
         datetime.strptime(data["date_of_visit"], "%Y-%m-%d")
     except ValueError:
         return jsonify({"error": "Incorrect date format. Use YYYY-MM-DD."}), 400
 
-    
-    #insert data into database in the patients collection
-    db.patients.insert_one({
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part in the request"}), 400
+    file = request.files['file']
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+    if not file.filename.endswith('.pdf'):
+        return jsonify({"error": "Only PDF files are allowed"}), 400
+
+    filename = secure_filename(file.filename)
+    pdf_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    file.save(pdf_path)
+    pdf_text = pdf_to_text(pdf_path)
+
+    medical_record = {
+        "date": data["date_of_visit"],
+        "content": pdf_text 
+    }
+
+    patient_data = {
         "patient_id": data.get("patient_id"),
         "first_name": data.get("first_name"),
         "last_name": data.get("last_name"),
@@ -58,13 +145,18 @@ def add_patient():
         "pre_existing_conditions": data.get("pre_existing_conditions", []),
         "symptoms": data.get("symptoms", []),
         "diagnosis": data.get("diagnosis"),
-        "medical_records": data.get("medical_records", []),
+        "medical_records": [medical_record], 
         "prescriptions": data.get("prescriptions", []),
-        "doctor_name": data.get("doctor")
-    })
-    
-    #return message that patient has been added successfully
-    return jsonify({"message": "Patient added successfully!"}), 201
+        "doctor_name": data.get("doctor_name")
+    }
+
+    db.patients.insert_one(patient_data)
+
+    os.remove(pdf_path)
+
+    return jsonify({"message": "Patient and medical record added successfully!"}), 201
+
+
 
 
 #adding a new reminder to reminders collection
