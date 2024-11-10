@@ -101,8 +101,6 @@ def home():
 #     #return message that patient has been added successfully
 #     return jsonify({"message": "Patient added successfully!"}), 201
 
-
-
 @app.route('/add_patient_with_pdf', methods=['POST'])
 def add_patient_with_pdf():
 
@@ -205,19 +203,62 @@ def test_route():
     return jsonify({"message": "Test route works!"})
 
 
-#getting a patient from patients collection
+# #getting a patient from patients collection
+# @app.route('/get_patient/<patient_id>', methods=['GET'])
+# def get_patient(patient_id):
+#     #find patient document in patients collection
+#     patient = db.patients.find_one({"patient_id": patient_id})
+    
+#     #if patient exists
+#     if patient:
+#         #convert MongoDB document to JSON-serializable dictionary
+#         patient['_id'] = str(patient['_id'])
+#         return jsonify(patient), 200
+#     else:
+#         return jsonify({"error": "Patient not found"}), 404
+
 @app.route('/get_patient/<patient_id>', methods=['GET'])
 def get_patient(patient_id):
-    #find patient document in patients collection
+    """
+    Fetch patient data by patient_id.
+    """
     patient = db.patients.find_one({"patient_id": patient_id})
     
-    #if patient exists
     if patient:
-        #convert MongoDB document to JSON-serializable dictionary
+        # Convert MongoDB ObjectId to string for JSON serialization
         patient['_id'] = str(patient['_id'])
         return jsonify(patient), 200
     else:
         return jsonify({"error": "Patient not found"}), 404
+
+@app.route('/update_patient/<patient_id>', methods=['PUT'])
+def update_patient(patient_id):
+    """
+    Update only the fields in the patient's record that are currently empty.
+    """
+    data = request.json
+    patient = db.patients.find_one({"patient_id": patient_id})
+
+    if not patient:
+        return jsonify({"error": "Patient not found"}), 404
+    
+    # Only update fields if they are empty in the database
+    update_fields = {}
+    for key, value in data.items():
+        # Only update if field is empty or not present in the database
+        if not patient.get(key):  
+            update_fields[key] = value
+
+    if not update_fields:
+        return jsonify({"message": "No fields to update."}), 400
+
+    result = db.patients.update_one({"patient_id": patient_id}, {"$set": update_fields})
+    
+    if result.matched_count > 0:
+        return jsonify({"message": "Patient information updated successfully!"}), 200
+    else:
+        return jsonify({"error": "Failed to update patient information"}), 500
+
 
 #getting a reminder from reminders collection
 @app.route('/get_reminders/<patient_id>', methods=['GET'])
@@ -233,30 +274,30 @@ def get_reminders(patient_id):
     else:
         return jsonify({"error": "No reminders found for this patient"}), 404
 
-#updating patient information in patients collection
-@app.route('/update_patient/<patient_id>', methods=['PUT'])
-def update_patient(patient_id):
-    data = request.json
+# #updating patient information in patients collection
+# @app.route('/update_patient/<patient_id>', methods=['PUT'])
+# def update_patient(patient_id):
+#     data = request.json
     
-    # update_fields = {}
-    # for key in ["first_name", "last_name", "date_of_birth", "gender", "phone_number", "address", "date_of_visit", "pre_existing_conditions", "symptoms", "diagnosis", "medical_records", "prescriptions", "doctor_name"]:
-    #     if key in data:
-    #         update_fields[key] = data[key]
+#     # update_fields = {}
+#     # for key in ["first_name", "last_name", "date_of_birth", "gender", "phone_number", "address", "date_of_visit", "pre_existing_conditions", "symptoms", "diagnosis", "medical_records", "prescriptions", "doctor_name"]:
+#     #     if key in data:
+#     #         update_fields[key] = data[key]
     
-    allowed_fields = ["first_name", "last_name", "date_of_birth", "gender", "phone_number", "address", "date_of_visit", "pre_existing_conditions", "symptoms", "diagnosis", "medical_records", "prescriptions", "doctor_name"]
-    #validate provided fields
-    update_fields = {key: data[key] for key in allowed_fields if key in data}
+#     allowed_fields = ["first_name", "last_name", "date_of_birth", "gender", "phone_number", "address", "date_of_visit", "pre_existing_conditions", "symptoms", "diagnosis", "medical_records", "prescriptions", "doctor_name"]
+#     #validate provided fields
+#     update_fields = {key: data[key] for key in allowed_fields if key in data}
 
-    #check if any update fields are provided
-    if not update_fields:
-        return jsonify({"error": "No valid fields to update."}), 400
+#     #check if any update fields are provided
+#     if not update_fields:
+#         return jsonify({"error": "No valid fields to update."}), 400
 
-    result = db.patients.update_one({"patient_id": patient_id}, {"$set": update_fields})
+#     result = db.patients.update_one({"patient_id": patient_id}, {"$set": update_fields})
     
-    if result.matched_count > 0:
-        return jsonify({"message": "Patient information updated successfully!"}), 200
-    else:
-        return jsonify({"error": "Patient not found"}), 404
+#     if result.matched_count > 0:
+#         return jsonify({"message": "Patient information updated successfully!"}), 200
+#     else:
+#         return jsonify({"error": "Patient not found"}), 404
 
 
 #updating reminder information in reminders collection

@@ -16,14 +16,3 @@ export default function Home() {
     </div>
   );
 }
-
-// 'use client'
-// import CombinedForm from './components/combinedForm';
-
-// export default function Home() {
-//   return (
-//     <div className="App">
-//       <CombinedForm />
-//     </div>
-//   );
-// }

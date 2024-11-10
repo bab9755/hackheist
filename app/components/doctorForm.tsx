@@ -1,5 +1,6 @@
-// components/DoctorForm.tsx
-import { useState } from 'react';
+
+
+import { useState, useEffect } from 'react';
 
 interface DoctorFormProps {
   goToPreviousStep: () => void;
@@ -14,6 +15,7 @@ interface Medication {
 
 export default function DoctorForm({ goToPreviousStep }: DoctorFormProps) {
   const [formData, setFormData] = useState({
+    patientId: '', // Unique identifier to fetch patient data
     doctorName: '',
     dateOfVisit: '',
     initialDiagnosis: '',
@@ -21,6 +23,31 @@ export default function DoctorForm({ goToPreviousStep }: DoctorFormProps) {
   const [medications, setMedications] = useState<Medication[]>([
     { medicine: '', repeat: '', duration: '', sideEffects: '' },
   ]);
+
+  // Fetch existing patient data if patientId is set
+  useEffect(() => {
+    if (formData.patientId) {
+      fetch(`http://127.0.0.1:5000/get_patient/${formData.patientId}`)
+        .then((response) => response.json())
+        .then((data) => {
+          if (!data.error) {
+            setFormData((prevData) => ({
+              ...prevData,
+              doctorName: data.doctor_name || '',
+              dateOfVisit: data.date_of_visit || '',
+              initialDiagnosis: data.diagnosis || '',
+            }));
+          } 
+          // for a better one do onsubmit. 
+          // else {   
+          //   alert(data.error);
+          // }
+        })
+        .catch((error) => {
+          console.error('Error fetching patient data:', error);
+        });
+    }
+  }, [formData.patientId]);
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
@@ -52,16 +79,21 @@ export default function DoctorForm({ goToPreviousStep }: DoctorFormProps) {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
 
-    const data = new FormData();
-    data.append('doctor_name', formData.doctorName);
-    data.append('date_of_visit', formData.dateOfVisit);
-    data.append('diagnosis', formData.initialDiagnosis);
-    data.append('prescriptions', JSON.stringify(medications));
+    const data = {
+      patient_id: formData.patientId,
+      doctor_name: formData.doctorName,
+      date_of_visit: formData.dateOfVisit,
+      diagnosis: formData.initialDiagnosis,
+      prescriptions: medications,
+    };
 
     try {
-      const response = await fetch('/add_patient_with_pdf', {
-        method: 'POST',
-        body: data,
+      const response = await fetch(`http://127.0.0.1:5000/update_patient/${formData.patientId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
       const result = await response.json();
 
@@ -83,6 +115,18 @@ export default function DoctorForm({ goToPreviousStep }: DoctorFormProps) {
         <h2 className="text-2xl font-semibold mb-6">Doctor&apos;s Input</h2>
 
         <form onSubmit={handleSubmit}>
+          <div className="mb-4">
+            <label className="block text-sm font-medium mb-1">Patient ID</label>
+            <input
+              type="text"
+              name="patientId"
+              placeholder="Enter Patient ID"
+              value={formData.patientId}
+              onChange={handleInputChange}
+              className="w-full border border-gray-300 rounded-lg p-2"
+            />
+          </div>
+
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
             <div>
               <label className="block text-sm font-medium mb-1">Doctor&apos;s Name</label>
@@ -108,7 +152,7 @@ export default function DoctorForm({ goToPreviousStep }: DoctorFormProps) {
           </div>
 
           <div className="mb-4">
-            <label className="block text-sm font-medium mb-1">Initial diagnosis and thoughts</label>
+            <label className="block text-sm font-medium mb-1">Initial Diagnosis and Thoughts</label>
             <textarea
               name="initialDiagnosis"
               placeholder="Type diagnosis"
