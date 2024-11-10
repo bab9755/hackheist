@@ -2,7 +2,8 @@
 import sys
 from mediconnect.crew import MediconnectCrew
 import requests
-from whatsapp.app.utils.whatsapp_utils import get_text_message_input, send_message
+import time
+
 # This main file is intended to be a way for you to run your
 # crew locally, so refrain from adding unnecessary logic into this file.
 # Replace with inputs you want to test with, it will automatically
@@ -42,13 +43,16 @@ def generate_patient_report(name, age, symptoms_summary, previous_diagnosis, pre
     """
     return report
 
+
+
 def run():
     """
     Run the crew.
     """
 
-    user_message = input("my head hurts")
-    patient_id = 'patient_005'
+    user_message = "my head hurts and I threw up."
+
+    patient_id = 'patient_003'
     response = requests.get(f"http://127.0.0.1:5000/get_patient/{patient_id}")
     
     patient_metadata = response.json()
@@ -58,10 +62,10 @@ def run():
 
     name = patient_metadata['first_name'] + ' ' + patient_metadata['last_name']
     age = patient_metadata['date_of_birth']
-    symptoms_summary = patient_metadata['symptoms']
+    symptoms_summary = " ".join(patient_metadata['symptoms'])
     previous_diagnosis = patient_metadata['diagnosis']
-    prescribed_medicine = patient_metadata['prescriptions']
-    preexisting_conditiion = patient_metadata['pre_existing_conditions']
+    prescribed_medicine = " ".join(patient_metadata['prescriptions'])
+    preexisting_conditiion = " ".join(patient_metadata['pre_existing_conditions'])
     doctor = patient_metadata['doctor_name']
     patient_report = generate_patient_report(name, age, symptoms_summary, previous_diagnosis, preexisting_conditiion, doctor, prescribed_medicine)
     print(patient_report)
@@ -77,7 +81,8 @@ def run():
                 'patient_message': f'{user_message}',
                 'doctor_schedule': 'Monday: 9AM - 10AM\nTuesday: 10AM - 11AM\nWednesday: 11AM - 12PM\nThursday: 12PM - 1PM\nFriday: 1PM - 2PM\nSaturday: 2PM - 3PM\nSunday: 3PM - 4PM',
             }
-    MediconnectCrew().crew().kickoff(inputs=inputs)
+    result = MediconnectCrew().crew().kickoff(inputs=inputs)
+    print(result)
 
 
 def train():

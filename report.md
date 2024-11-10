@@ -1,0 +1,1 @@
+Hi Alex, thank you for reaching out! We have scheduled your appointment for Wednesday at 11AM with Dr. Michael Chen. If you have any questions or need to reschedule, feel free to let us know. Looking forward to seeing you then!
