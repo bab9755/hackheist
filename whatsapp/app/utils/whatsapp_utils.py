@@ -74,7 +74,8 @@ def process_text_for_whatsapp(text):
 # make sense of this part 
 
 def process_whatsapp_message(body):
-    
+
+
     wa_id = body["entry"][0]["changes"][0]["value"]["contacts"][0]["wa_id"]
     name = body["entry"][0]["changes"][0]["value"]["contacts"][0]["profile"]["name"]
 

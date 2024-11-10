@@ -1,7 +1,9 @@
 #import libraries to be used
 from flask import Flask, request, jsonify
 from pymongo import MongoClient
+
 import certifi
+
 from bson import ObjectId
 
 from datetime import datetime
@@ -28,6 +30,7 @@ app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 #using mongodba atlas
 client = MongoClient("mongodb+srv://hackprinceton:hackprinceton123@cluster0.djq2l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0", tlsCAFile=certifi.where())
+
 #main database
 db = client.healthcare 
 
