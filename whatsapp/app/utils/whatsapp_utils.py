@@ -55,6 +55,7 @@ def send_message(data):
         # if everything is normal, process the response as normal
 
         log_http_response(response)
+        Thread = False
         return response 
     
 
@@ -88,44 +89,44 @@ def process_whatsapp_message(body):
     message_body = message["text"]["body"]
     print(message_body)
 
-    user_message = message_body
+    #user_message = message_body
 
-    patient_id = 'patient_003'
-    response = requests.get(f"http://127.0.0.1:5000/get_patient/{patient_id}")
+    # patient_id = 'patient_003'
+    # response = requests.get(f"http://127.0.0.1:5000/get_patient/{patient_id}")
     
-    patient_metadata = response.json()
+    # patient_metadata = response.json()
 
 
-    print(patient_metadata)
+  
 
-    name = patient_metadata['first_name'] + ' ' + patient_metadata['last_name']
-    age = patient_metadata['date_of_birth']
-    symptoms_summary = " ".join(patient_metadata['symptoms'])
-    previous_diagnosis = patient_metadata['diagnosis']
-    # ... existing code ...
-    prescribed_medicine = ''
-    for pres in patient_metadata['prescriptions']:
-        duration = pres.get('duration', '')
-        frequency = pres.get('frequency', '')
-        medicine_name = pres.get('medicine_name', '')
-        once_daily = pres.get('Once daily', '')
-        prescribed_medicine += f"{duration} {frequency} {medicine_name} {once_daily} ".strip() + ' '
-    # ... existing code ...
-    preexisting_conditiion = " ".join(patient_metadata['pre_existing_conditions'])
-    doctor = patient_metadata['doctor_name']
-    patient_report = generate_patient_report(name, age, symptoms_summary, previous_diagnosis, preexisting_conditiion, doctor, prescribed_medicine)
-    print(patient_report)
-    # print("Starting the messaging session...")
-    # print("Bot: Hello, how can I help you today?")
-    # while True:
+    # name = patient_metadata['first_name'] + ' ' + patient_metadata['last_name']
+    # age = patient_metadata['date_of_birth']
+    # symptoms_summary = " ".join(patient_metadata['symptoms'])
+    # previous_diagnosis = patient_metadata['diagnosis']
+    # # ... existing code ...
+    # prescribed_medicine = ''
+    # for pres in patient_metadata['prescriptions']:
+    #     duration = pres.get('duration', '')
+    #     frequency = pres.get('frequency', '')
+    #     medicine_name = pres.get('medicine_name', '')
+    #     once_daily = pres.get('Once daily', '')
+    #     prescribed_medicine += f"{duration} {frequency} {medicine_name} {once_daily} ".strip() + ' '
+    # # ... existing code ...
+    # preexisting_conditiion = " ".join(patient_metadata['pre_existing_conditions'])
+    # doctor = patient_metadata['doctor_name']
+    # patient_report = generate_patient_report(name, age, symptoms_summary, previous_diagnosis, preexisting_conditiion, doctor, prescribed_medicine)
+    # print(patient_report)
+    # # print("Starting the messaging session...")
+    # # print("Bot: Hello, how can I help you today?")
+    # # while True:
 
-    inputs = {
-                'topic': f'LLMs',
-                'patient_report': f'{patient_report}',
-                'user_input': f'{user_message}',
-                'patient_message': f'{user_message}',
-                'doctor_schedule': 'Monday: 9AM - 10AM\nTuesday: 10AM - 11AM\nWednesday: 11AM - 12PM\nThursday: 12PM - 1PM\nFriday: 1PM - 2PM\nSaturday: 2PM - 3PM\nSunday: 3PM - 4PM',
-            }
+    # inputs = {
+    #             'topic': f'LLMs',
+    #             'patient_report': f'{patient_report}',
+    #             'user_input': f'{user_message}',
+    #             'patient_message': f'{user_message}',
+    #             'doctor_schedule': 'Monday: 9AM - 10AM\nTuesday: 10AM - 11AM\nWednesday: 11AM - 12PM\nThursday: 12PM - 1PM\nFriday: 1PM - 2PM\nSaturday: 2PM - 3PM\nSunday: 3PM - 4PM',
+    #         }
 
   
 

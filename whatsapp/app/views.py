@@ -38,7 +38,6 @@ def handle_message():
 
 
     body = request.get_json()
-    print("what is in this ? ", body)
 
    
 
@@ -57,8 +56,9 @@ def handle_message():
         return jsonify({"status":"ok"}), 200
     
     try:
-        if is_valid_whatsapp_message(body):
+        if is_valid_whatsapp_message(body) :
             process_whatsapp_message(body)
+            
             return jsonify({"status":"ok"}),200
         else:
             return(
